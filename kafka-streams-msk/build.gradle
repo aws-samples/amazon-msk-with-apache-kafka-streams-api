@@ -1,0 +1,36 @@
+plugins {
+  id 'java'
+  id 'maven'
+}
+
+group 'com.amazonaws.kafka.examples'
+version '1.3-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+  jcenter()
+}
+
+dependencies {
+  //Kafka Streams dependencies
+  implementation 'org.apache.kafka:kafka-streams:2.2.1'
+  implementation 'org.apache.kafka:kafka-clients:2.2.1'
+
+  // Logging dependency
+  implementation 'org.slf4j:slf4j-log4j12:1.7.30'
+
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'org.assertj:assertj-core:3.19.0'
+  testImplementation 'org.apache.kafka:kafka-streams-test-utils:2.4.0'
+}
+
+//Configs required to generate "Fat" jar
+jar {
+  manifest {
+    attributes 'Main-Class': 'com.amazonaws.kafka.examples.App'
+  }
+
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
