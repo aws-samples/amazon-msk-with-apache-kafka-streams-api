@@ -3,6 +3,13 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="/kafka-streams-msk/Dockerfile">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/kafka-streams-msk/src/main/java/com/amazonaws/kafka/examples/App.java">
           <value>
             <Attribute>

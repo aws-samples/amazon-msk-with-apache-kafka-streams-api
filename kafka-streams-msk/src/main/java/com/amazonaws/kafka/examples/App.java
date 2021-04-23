@@ -27,6 +27,5 @@ public class App {
 
     /* Start the Kafka Streams threads */
     streams.start();
-
   }
 }

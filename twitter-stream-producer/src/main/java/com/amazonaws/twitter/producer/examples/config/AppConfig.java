@@ -23,10 +23,7 @@ public class AppConfig {
   public static final String TWITTER_API_URL =
       getProperty("twitter.api", "https://api.twitter.com/2/tweets/sample/stream");
 
-  public static final String BEARER_TOKEN =
-      getProperty(
-          "bearer.token",
-          "AAAAAAAAAAAAAAAAAAAAAGEwOgEAAAAA63BYKITP%2FfNiWZeKLC9M4z5o%2FBQ%3DPnXY5bUYGMSoctkvb1TSqrA7knn32Bo3fFF6cReQwGNup9dl06");
+  public static final String BEARER_TOKEN = getProperty("bearer.token", "");
 
   public static final String TOPIC = "twitter_input";
 
