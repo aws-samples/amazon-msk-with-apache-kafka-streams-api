@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.amazonaws.kafka.examples'
-version '1.4-SNAPSHOT'
+version '1.8-SNAPSHOT'
 
 repositories {
   mavenCentral()

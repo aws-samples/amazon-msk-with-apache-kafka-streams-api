@@ -1,5 +1,6 @@
 package com.amazonaws.twitter.producer.examples.config;
 
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -19,16 +20,13 @@ public class AppConfig {
    * Kafka cluster.
    */
   public static final String KAFKA_BRK = getProperty("kafka.broker", "localhost:9092");
-
   public static final String TWITTER_API_URL =
       getProperty("twitter.api", "https://api.twitter.com/2/tweets/sample/stream");
-
-  public static final String BEARER_TOKEN = getProperty("bearer.token", "");
-
-  public static final String TOPIC = "twitter_input";
+  public static final String BEARER_TOKEN = getProperty("bearer.token");
+  public static final String TOPIC = getProperty("topic.input", "twitter_input");
 
   public Properties kafkaProps() {
-    Properties props = new Properties();
+    var props = new Properties();
     props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BRK);
     props.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
     props.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());

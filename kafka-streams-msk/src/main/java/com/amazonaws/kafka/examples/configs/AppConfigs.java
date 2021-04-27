@@ -17,20 +17,20 @@ public class AppConfigs {
    * Kafka cluster.
    */
   public static final String KAFKA_BRK = getProperty("kafka.broker", "localhost:9092");
-
-  public static final String INPUT_TOPIC = "twitter_input";
-  public static final String OUTPUT_TOPIC = "twitter_output";
+  public static final String INPUT_TOPIC = getProperty("topic.input", "twitter_input");
+  public static final String OUTPUT_TOPIC = getProperty("topic.output", "twitter_output");
 
   public static Properties streamProps() {
 
     /* Configuring basic kafka properties */
-    Properties props = new Properties();
-    props.put(APPLICATION_ID_CONFIG, "kafka-streams-msk-2");
+    var props = new Properties();
+    props.put(APPLICATION_ID_CONFIG, "msk-streams-processing");
     props.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BRK);
     props.put(DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
     props.put(PROCESSING_GUARANTEE_CONFIG, EXACTLY_ONCE);
+    props.put(REPLICATION_FACTOR_CONFIG, 3);
 
     return props;
   }

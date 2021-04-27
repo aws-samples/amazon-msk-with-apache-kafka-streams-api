@@ -16,9 +16,9 @@ public class App {
 
   public static void main(String[] args) throws IOException, URISyntaxException {
 
-    AppConfig configs = new AppConfig();
-    KafkaService kafkaService = new KafkaService(configs.kafkaProducer());
-    TwitterService twitterService = new TwitterService(kafkaService, configs.httpClient());
+    var configs = new AppConfig();
+    var kafkaService = new KafkaService(configs.kafkaProducer());
+    var twitterService = new TwitterService(kafkaService, configs.httpClient());
     if (null != BEARER_TOKEN) {
       twitterService.connectStream(BEARER_TOKEN);
     } else {
