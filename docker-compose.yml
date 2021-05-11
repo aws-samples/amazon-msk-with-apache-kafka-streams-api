@@ -1,0 +1,8 @@
+version: '2'
+services:
+  kafka-streams-msk:
+    build: kafka-streams-msk/
+    image: kafka-streams-msk:latest
+  twitter-stream-producer:
+    build: twitter-stream-producer/
+    image: twitter-stream-producer:latest
