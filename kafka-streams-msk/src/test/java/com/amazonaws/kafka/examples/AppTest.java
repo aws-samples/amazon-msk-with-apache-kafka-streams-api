@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 package com.amazonaws.kafka.examples;
 
 import com.amazonaws.kafka.examples.service.StreamBuilderService;
