@@ -1,0 +1,47 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+plugins {
+  id 'java'
+  id 'maven'
+}
+
+group 'com.amazonaws.twitter.producer.examples'
+version '2.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  //Kafka Streams dependencies
+  implementation 'org.apache.kafka:kafka-clients:2.6.1'
+
+  // Logging dependency
+  implementation 'org.slf4j:slf4j-log4j12:1.7.30'
+
+  implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+  implementation 'org.json:json:20210307'
+
+  // Testing dependencies
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+  testImplementation 'org.assertj:assertj-core:3.19.0'
+  testImplementation 'org.mockito:mockito-inline:3.9.0'
+  testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+//Configs required to generate "Fat" jar
+jar {
+  manifest {
+    attributes 'Main-Class': 'com.amazonaws.twitter.producer.examples.App'
+  }
+
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}

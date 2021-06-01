@@ -1,0 +1,38 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+plugins {
+  id 'java'
+  id 'maven'
+}
+
+group 'com.amazonaws.kafka.examples'
+version '2.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  //Kafka Streams dependencies
+  implementation 'org.apache.kafka:kafka-streams:2.6.1'
+
+  // Logging dependency
+  implementation 'org.slf4j:slf4j-log4j12:1.7.30'
+
+  //Testing dependencies
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'org.assertj:assertj-core:3.19.0'
+  testImplementation 'org.apache.kafka:kafka-streams-test-utils:2.6.1'
+}
+
+//Configs required to generate "Fat" jar
+jar {
+  manifest {
+    attributes 'Main-Class': 'com.amazonaws.kafka.examples.App'
+  }
+
+  from {
+    configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}

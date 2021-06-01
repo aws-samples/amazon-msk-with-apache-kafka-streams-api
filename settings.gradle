@@ -1,0 +1,3 @@
+rootProject.name = 'amazon-msk-with-apache-kafka-streams-api'
+include 'kafka-streams-msk'
+include 'twitter-stream-producer'
