@@ -7,10 +7,14 @@
     <list default="true" id="ad48dacb-cfec-492d-878e-a8951bcf5207" name="Default Changelist" comment="">
       <change afterPath="$PROJECT_DIR$/kafka-streams-msk/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/kafka-streams-msk/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kafka-streams-msk/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kafka-streams-msk/gradlew.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/twitter-stream-producer/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/twitter-stream-producer/gradlew.bat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kafka-streams-msk/.gradle/6.1.1/executionHistory/executionHistory.bin" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/kafka-streams-msk/.gradle/6.1.1/executionHistory/executionHistory.lock" beforeDir="false" />
@@ -242,12 +246,23 @@
       <workItem from="1621550381466" duration="44000" />
       <workItem from="1621966524666" duration="5954000" />
       <workItem from="1622050078535" duration="293000" />
-      <workItem from="1622565398724" duration="2198000" />
+      <workItem from="1622565398724" duration="2505000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
