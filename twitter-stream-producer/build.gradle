@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'com.amazonaws.twitter.producer.examples'
-version '2.0-SNAPSHOT'
+version '1.0.0-SNAPSHOT'
 
 repositories {
   mavenCentral()
@@ -20,6 +20,7 @@ dependencies {
   // Logging dependency
   implementation 'org.slf4j:slf4j-log4j12:1.7.30'
 
+  //General dependencies
   implementation 'org.apache.httpcomponents:httpclient:4.5.13'
   implementation 'org.json:json:20210307'
 
