@@ -3,71 +3,91 @@ Description: ECS Fargate template.
 Parameters:
   VPC:
     Type: AWS::EC2::VPC::Id
-  SubnetA:
+  PrivateSubnet1:
     Type: AWS::EC2::Subnet::Id
-  SubnetB:
+  PrivateSubnet2:
     Type: AWS::EC2::Subnet::Id
-  Image1:
+  KafkaClientInstanceSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  BearerToken:
+    Type: String
+    Default: Dummy_Token_AAAAAAAAAAAAAAAAAAAAAMLheAAAAAAA0%2BuSeid%2BULvsea4JtiGRiSDSJSI%3DEUifiRBkKG5E2XzMDjRfl76ZC9Ub0wnz4XsNiRVBChTYbJcE3F
+  MskBrokers:
+    Type: String
+    Default: b-1.mskcluster.abc123.a1.kafka.<<region>>.amazonaws.com:9092,b-2.mskcluster.abc123.b2.kafka.<<region>>.amazonaws.com:9092
+  ImageTwitterStreamProducer:
     Type: String
     # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
-    Default: <<account_number>>.dkr.ecr.<<region>>.amazonaws.com/twitter-stream-producer:latest
-  Image2:
+    Default: <<your_account_number>>.dkr.ecr.<<region>>.amazonaws.com/twitter-stream-producer:latest
+  ImageKafkaStreams:
     Type: String
     # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
-    Default: <<account_number>>.dkr.ecr.<<region>>.amazonaws.com/kafka-streams-msk:latest
+    Default: <<your_account_number>>.dkr.ecr.<<region>>.amazonaws.com/kafka-streams-msk:latest
   ServiceName1:
     Type: String
-    # update with the name of the service
     Default: twitter-stream-producer
+    AllowedValues: [twitter-stream-producer]
   ServiceName2:
     Type: String
-    # update with the name of the service
     Default: kafka-streams-msk
+    AllowedValues: [kafka-streams-msk]
+
 Resources:
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: MSK-Fargate-Demo
-  TaskDefinition:
+
+  TaskDefinition1:
     Type: AWS::ECS::TaskDefinition
-    # Makes sure the log group is created before it is used.
-    DependsOn: LogGroup
+    DependsOn: LogGroup1
     Properties:
-      # Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
-      Family: !Join ['', [!Ref ServiceName1, TaskDefinition]]
-      # awsvpc is required for Fargate
+      Family: !Join ['', [!Ref ServiceName1, TaskDefinition1]]
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
-      # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
-      # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
-      # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
-      # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
       Cpu: 2048
-      # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
-      # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
-      # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
-      # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
-      # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
       Memory: 4GB
-      # A role needed by ECS.
-      # "The ARN of the task execution role that containers in this task can assume. All containers in this task are granted the permissions that are specified in this role."
-      # "There is an optional task execution IAM role that you can specify with Fargate to allow your Fargate tasks to make API calls to Amazon ECR."
       ExecutionRoleArn: !Ref ExecutionRole
-      # "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that grants containers in the task permission to call AWS APIs on your behalf."
       TaskRoleArn: !Ref TaskRole
       ContainerDefinitions:
         - Name: !Ref ServiceName1
-          Image: !Ref Image1
-          # Send logs to CloudWatch Logs
+          Image: !Ref ImageTwitterStreamProducer
+          Environment:
+            - Name: JAVA_TOOL_OPTIONS
+              Value: !Join ['', ['-Dkafka.broker=', !Ref MskBrokers, ' -Dbearer.token=', !Ref BearerToken]]
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-region: !Ref AWS::Region
-              awslogs-group: !Ref LogGroup
+              awslogs-group: !Ref LogGroup1
               awslogs-stream-prefix: ecs
-  # A role needed by ECS
+
+  TaskDefinition2:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn: LogGroup2
+    Properties:
+      Family: !Join ['', [!Ref ServiceName2, TaskDefinition2]]
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 2048
+      Memory: 4GB
+      ExecutionRoleArn: !Ref ExecutionRole
+      TaskRoleArn: !Ref TaskRole
+      ContainerDefinitions:
+        - Name: !Ref ServiceName2
+          Image: !Ref ImageKafkaStreams
+          Environment:
+            - Name: JAVA_TOOL_OPTIONS
+              Value: !Join ['', ['-Dkafka.broker=', !Ref MskBrokers]]
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup2
+              awslogs-stream-prefix: ecs
+
   ExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -80,6 +100,7 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -92,44 +113,53 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
-  ContainerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: !Join ['', [!Ref ServiceName1, ContainerSecurityGroup]]
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref ContainerPort
-          ToPort: !Ref ContainerPort
-          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
-  Service:
+
+  Service1:
     Type: AWS::ECS::Service
     Properties:
       ServiceName: !Ref ServiceName1
       Cluster: !Ref Cluster
-      TaskDefinition: !Ref TaskDefinition
+      TaskDefinition: !Ref TaskDefinition1
       DeploymentConfiguration:
         MinimumHealthyPercent: 100
         MaximumPercent: 200
-      DesiredCount: 2
-      # This may need to be adjusted if the container takes a while to start up
-      HealthCheckGracePeriodSeconds: 30
+      DesiredCount: 1
       LaunchType: FARGATE
       NetworkConfiguration:
         AwsvpcConfiguration:
-          # change to DISABLED if you're using private subnets that have access to a NAT gateway
           AssignPublicIp: ENABLED
           Subnets:
-            - !Ref SubnetA
-            - !Ref SubnetB
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
           SecurityGroups:
-            - !Ref ContainerSecurityGroup
-      LoadBalancers:
-        - ContainerName: !Ref ServiceName1
-          ContainerPort: !Ref ContainerPort
-          TargetGroupArn: !Ref TargetGroup
+            - !Ref KafkaClientInstanceSecurityGroupId
 
-  LogGroup:
+  Service2:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Ref ServiceName2
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition2
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+      DesiredCount: 3
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
+          SecurityGroups:
+            - !Ref KafkaClientInstanceSecurityGroupId
+
+  LogGroup1:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['', [/ecs/, !Ref ServiceName1, TaskDefinition]]
+      LogGroupName: !Join ['', [/ecs/, !Ref ServiceName1, TaskDefinition1]]
+
+  LogGroup2:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['', [ /ecs/, !Ref ServiceName2, TaskDefinition2]]

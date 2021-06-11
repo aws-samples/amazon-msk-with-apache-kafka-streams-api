@@ -48,7 +48,7 @@ Temporary Items
 ### Java template
 # Compiled class file
 *.class
-
+.java-version
 # Log file
 *.log
 

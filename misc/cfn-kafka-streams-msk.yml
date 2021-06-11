@@ -41,7 +41,7 @@ Resources:
         - CIDR
       Tags:
         - Key: Name
-          Value: MMVPC
+          Value: MskDemoVpc
   PublicSubnetOne:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -57,7 +57,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: MMPublicSubnet
+          Value: MskPublicSubnet
   PrivateSubnetOne:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -72,7 +72,7 @@ Resources:
         - CIDR
       Tags:
         - Key: Name
-          Value: MMPrivateSubnetOne
+          Value: MskPrivateSubnetOne
   PrivateSubnetTwo:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -87,7 +87,7 @@ Resources:
         - CIDR
       Tags:
         - Key: Name
-          Value: MMPrivateSubnetTwo
+          Value: MskPrivateSubnetTwo
   PrivateSubnetThree:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -102,9 +102,19 @@ Resources:
         - CIDR
       Tags:
         - Key: Name
-          Value: MMPrivateSubnetThree
+          Value: MskPrivateSubnetThree
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachement
+    Properties:
+      Domain: vpc
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnetOne
   GatewayAttachement:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
@@ -130,6 +140,12 @@ Resources:
     Type: 'AWS::EC2::RouteTable'
     Properties:
       VpcId: !Ref VPC
+  DefaultPrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
   PrivateSubnetOneRouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
@@ -258,7 +274,6 @@ Resources:
       InstanceProfileName: EC2MSKCFProfile
       Roles:
         - !Ref EC2Role
-
   MSKCluster:
     Type: 'AWS::MSK::Cluster'
     Properties:
@@ -283,6 +298,14 @@ Resources:
       EnhancedMonitoring: PER_TOPIC_PER_BROKER
       KafkaVersion: 2.6.1
       NumberOfBrokerNodes: 3
+  EcrRepository1:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: "kafka-streams-msk"
+  EcrRepository2:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: "twitter-stream-producer"
 Outputs:
   VPCId:
     Description: The ID of the VPC created
@@ -304,11 +327,6 @@ Outputs:
     Value: !GetAtt
       - MSKSecurityGroup
       - GroupId
-  KafkaClientEC2InstancePublicDNS:
-    Description: The Public DNS for the MirrorMaker EC2 instance
-    Value: !GetAtt
-      - KafkaClientEC2Instance
-      - PublicDnsName
   MSKClusterArn:
-    Description: The Arn for the MSKMMCluster1 MSK cluster
+    Description: The Arn for the MSK cluster
     Value: !Ref MSKCluster
