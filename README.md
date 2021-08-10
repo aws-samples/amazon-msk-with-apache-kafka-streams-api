@@ -6,7 +6,7 @@ Our streaming application architecture will consist of Stream Producer, which wi
 
 ![Architecture](misc/MSK_Kafka_Streams_Fargate.png)
 
-You can find a further details and a more thorough description and discussion of the architecture on the [AWS Big Data Blog]().
+You can find a further details and a more thorough description and discussion of the architecture on the [AWS Big Data Blog](https://aws.amazon.com/blogs/big-data/power-your-kafka-streams-application-with-amazon-msk-and-aws-fargate/).
 
 ## Security
 
