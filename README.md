@@ -8,6 +8,22 @@ Our streaming application architecture will consist of Stream Producer, which wi
 
 You can find a further details and a more thorough description and discussion of the architecture on the [AWS Big Data Blog](https://aws.amazon.com/blogs/big-data/power-your-kafka-streams-application-with-amazon-msk-and-aws-fargate/).
 
+## Prerequisites
+
+Make sure to complete the following steps as prerequisites:
+
+1. Create an AWS account. For this post, you configure the required AWS resources in the `us-east-1` or `us-west-2` Region. If you haven’t signed up, complete the following tasks:
+
+    a. Create an account. For instructions, see [Sign Up for AWS](https://lakeformation.aworkshop.io/30-prerequisite/301-sign-up-aws.html).
+    
+    b. Create an [AWS Identity and Access Management](https://aws.amazon.com/iam/) (IAM) user. For instructions, see [Create an IAM User](https://lakeformation.aworkshop.io/30-prerequisite/302-create-iam-account.html).
+    
+2. Have a Bearer Token associated with your Twitter app. To create a developer account, see [Get started with the Twitter developer platform](https://developer.twitter.com/en/docs/getting-started).
+3. Install [Docker](https://docs.docker.com/get-docker/) on your local machine.
+4. Java 11
+
+
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
