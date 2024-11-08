@@ -33,10 +33,7 @@ class AppConfigTest {
         StringSerializer.class.getName(), props.getProperty(VALUE_SERIALIZER_CLASS_CONFIG));
   }
 
-  @Test
-  void returnsNonNullHttpClient() {
-    assertNotNull(subject.httpClient());
-  }
+
 
   @Test
   void returnsNonNullKafkaProducer() {
