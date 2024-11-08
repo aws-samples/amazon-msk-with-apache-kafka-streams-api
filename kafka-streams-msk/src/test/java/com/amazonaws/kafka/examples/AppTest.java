@@ -11,9 +11,10 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.TestInputTopic;
 import org.apache.kafka.streams.TestOutputTopic;
 import org.apache.kafka.streams.TopologyTestDriver;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -25,7 +26,7 @@ import java.util.UUID;
 import static com.amazonaws.kafka.examples.configs.AppConfigs.*;
 import static org.apache.kafka.streams.StreamsConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AppTest {
 
@@ -34,7 +35,7 @@ public class AppTest {
   private TestInputTopic<String, String> inputTopic;
   private TestOutputTopic<String, Long> outputTopic;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     final StreamsBuilder builder = new StreamsBuilder();
     StreamBuilderService.createStream(builder);
@@ -47,7 +48,7 @@ public class AppTest {
             OUTPUT_TOPIC, new StringDeserializer(), new LongDeserializer());
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     try {
       testDriver.close();

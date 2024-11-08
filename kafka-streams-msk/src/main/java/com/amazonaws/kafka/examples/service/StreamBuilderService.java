@@ -16,11 +16,11 @@ import static org.apache.kafka.common.serialization.Serdes.String;
 import static org.apache.kafka.streams.kstream.Materialized.with;
 import static org.apache.kafka.streams.kstream.Suppressed.BufferConfig.unbounded;
 import static org.apache.kafka.streams.kstream.Suppressed.untilWindowCloses;
-import static org.apache.kafka.streams.kstream.TimeWindows.of;
+import static org.apache.kafka.streams.kstream.TimeWindows.ofSizeAndGrace;
 
 public class StreamBuilderService {
 
-  private static final TimeWindows WINDOW_20_SEC = of(ofSeconds(20)).grace(ofMillis(0));
+  private static final TimeWindows WINDOW_20_SEC = ofSizeAndGrace(ofSeconds(20),ofMillis(0));
   private static final int MIN_MENTIONED_IN_WINDOW = 4;
   private static final int MIN_CHAR_LENGTH = 1;
 

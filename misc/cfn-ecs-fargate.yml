@@ -1,20 +1,17 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: ECS Fargate template.
 Parameters:
-  VPC:
-    Type: AWS::EC2::VPC::Id
   PrivateSubnet1:
     Type: AWS::EC2::Subnet::Id
   PrivateSubnet2:
     Type: AWS::EC2::Subnet::Id
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet::Id
   KafkaClientInstanceSecurityGroupId:
     Type: AWS::EC2::SecurityGroup::Id
-  BearerToken:
+  MskBrokersIAM:
     Type: String
-    Default: Dummy_Token_AAAAAAAAAAAAAAAAAAAAAMLheAAAAAAA0%2BuSeid%2BULvsea4JtiGRiSDSJSI%3DEUifiRBkKG5E2XzMDjRfl76ZC9Ub0wnz4XsNiRVBChTYbJcE3F
-  MskBrokers:
-    Type: String
-    Default: b-1.mskcluster.abc123.a1.kafka.<<region>>.amazonaws.com:9092,b-2.mskcluster.abc123.b2.kafka.<<region>>.amazonaws.com:9092
+    Default: b-1.mskcluster.abc123.a1.kafka.<<region>>.amazonaws.com:9098,b-2.mskcluster.abc123.b2.kafka.<<region>>.amazonaws.com:9098
   ImageTwitterStreamProducer:
     Type: String
     # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
@@ -37,56 +34,9 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: MSK-Fargate-Demo
-
-  TaskDefinition1:
-    Type: AWS::ECS::TaskDefinition
-    DependsOn: LogGroup1
-    Properties:
-      Family: !Join ['', [!Ref ServiceName1, TaskDefinition1]]
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      Cpu: 2048
-      Memory: 4GB
-      ExecutionRoleArn: !Ref ExecutionRole
-      TaskRoleArn: !Ref TaskRole
-      ContainerDefinitions:
-        - Name: !Ref ServiceName1
-          Image: !Ref ImageTwitterStreamProducer
-          Environment:
-            - Name: JAVA_TOOL_OPTIONS
-              Value: !Join ['', ['-Dkafka.broker=', !Ref MskBrokers, ' -Dbearer.token=', !Ref BearerToken]]
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-region: !Ref AWS::Region
-              awslogs-group: !Ref LogGroup1
-              awslogs-stream-prefix: ecs
-
-  TaskDefinition2:
-    Type: AWS::ECS::TaskDefinition
-    DependsOn: LogGroup2
-    Properties:
-      Family: !Join ['', [!Ref ServiceName2, TaskDefinition2]]
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      Cpu: 2048
-      Memory: 4GB
-      ExecutionRoleArn: !Ref ExecutionRole
-      TaskRoleArn: !Ref TaskRole
-      ContainerDefinitions:
-        - Name: !Ref ServiceName2
-          Image: !Ref ImageKafkaStreams
-          Environment:
-            - Name: JAVA_TOOL_OPTIONS
-              Value: !Join ['', ['-Dkafka.broker=', !Ref MskBrokers]]
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-region: !Ref AWS::Region
-              awslogs-group: !Ref LogGroup2
-              awslogs-stream-prefix: ecs
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
 
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -101,6 +51,92 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
 
+  TaskDefinition1:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ServiceName1}TaskDefinition1"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 2048
+      Memory: 4GB
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      TaskRoleArn: !Ref TaskRole
+      ContainerDefinitions:
+        - Name: !Ref ServiceName1
+          Image: !Ref ImageTwitterStreamProducer
+          User: "1000"  # Set a non-root user
+          Environment:
+            - Name: JAVA_TOOL_OPTIONS
+              Value: !Sub "-Dkafka.broker=${MskBrokersIAM}"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup1
+              awslogs-stream-prefix: ecs
+
+  TaskDefinition2:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ServiceName2}TaskDefinition2"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: 2048
+      Memory: 4GB
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      TaskRoleArn: !Ref TaskRole
+      ContainerDefinitions:
+        - Name: !Ref ServiceName2
+          Image: !Ref ImageKafkaStreams
+          User: "1000"  # Set a non-root user
+          Environment:
+            - Name: JAVA_TOOL_OPTIONS
+              Value: !Sub "-Dkafka.broker=${MskBrokersIAM}"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup2
+              awslogs-stream-prefix: ecs
+
+  MSKIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MSKIAMPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - kafka-cluster:Connect
+              - kafka-cluster:AlterCluster
+              - kafka-cluster:DescribeCluster
+              - kafka-cluster:WriteDataIdempotently
+            Resource: !Sub "arn:${AWS::Partition}:kafka:${AWS::Region}:${AWS::AccountId}:cluster/MSKCluster/*"
+          - Effect: Allow
+            Action:
+              - kafka-cluster:DescribeTopic
+              - kafka-cluster:CreateTopic
+              - kafka-cluster:AlterTopic
+              - kafka-cluster:WriteData
+              - kafka-cluster:ReadData
+            Resource: !Sub "arn:${AWS::Partition}:kafka:${AWS::Region}:${AWS::AccountId}:topic/MSKCluster/*"
+          - Effect: Allow
+            Action:
+              - kafka-cluster:AlterGroup
+              - kafka-cluster:DescribeGroup
+            Resource: !Sub "arn:${AWS::Partition}:kafka:${AWS::Region}:${AWS::AccountId}:group/MSKCluster/*"
+          - Effect: Allow
+            Action:
+              - kafka-cluster:DescribeTransactionalId
+              - kafka-cluster:AlterTransactionalId
+            Resource: !Sub "arn:${AWS::Partition}:kafka:${AWS::Region}:${AWS::AccountId}:transactional-id/MSKCluster/*"
+      Roles:
+        - !Ref TaskRole
+
+
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -113,6 +149,7 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
+
 
   Service1:
     Type: AWS::ECS::Service
@@ -131,6 +168,7 @@ Resources:
           Subnets:
             - !Ref PrivateSubnet1
             - !Ref PrivateSubnet2
+            - !Ref PrivateSubnet3
           SecurityGroups:
             - !Ref KafkaClientInstanceSecurityGroupId
 
@@ -151,15 +189,58 @@ Resources:
           Subnets:
             - !Ref PrivateSubnet1
             - !Ref PrivateSubnet2
+            - !Ref PrivateSubnet3
           SecurityGroups:
             - !Ref KafkaClientInstanceSecurityGroupId
+  ECSLogKey:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      Description: An symmetric encryption KMS key for the logging groups
+      EnableKeyRotation: true
+      PendingWindowInDays: 20
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow use of the key for Cloudwatch Service
+            Effect: Allow
+            Principal:
+              Service: !Sub 'logs.${AWS::Region}.amazonaws.com'
+            Action:
+              - 'kms:DescribeKey'
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey'
+              - 'kms:GenerateDataKeyWithoutPlaintext'
+            Resource: '*'
+            Condition:
+              ArnEquals:
+                'kms:EncryptionContext:aws:logs:arn': !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*'
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
 
   LogGroup1:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['', [/ecs/, !Ref ServiceName1, TaskDefinition1]]
+      LogGroupName: !Sub "/ecs/${ServiceName1}TaskDefinition1"
+      RetentionInDays: 30 
+      KmsKeyId: !GetAtt ECSLogKey.Arn
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete
+
 
   LogGroup2:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['', [ /ecs/, !Ref ServiceName2, TaskDefinition2]]
+      LogGroupName: !Sub "/ecs/${ServiceName2}TaskDefinition2"
+      RetentionInDays: 30 
+      KmsKeyId: !GetAtt ECSLogKey.Arn
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Delete

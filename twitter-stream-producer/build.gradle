@@ -3,7 +3,7 @@
 
 plugins {
   id 'java'
-  id 'maven'
+  id 'maven-publish'
 }
 
 group 'com.amazonaws.twitter.producer.examples'
@@ -13,23 +13,31 @@ repositories {
   mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 dependencies {
   //Kafka Streams dependencies
-  implementation 'org.apache.kafka:kafka-clients:2.6.1'
+  implementation 'org.apache.kafka:kafka-clients:3.8.0'
+  implementation 'software.amazon.msk:aws-msk-iam-auth:2.2.0'
+
 
   // Logging dependency
-  implementation 'org.slf4j:slf4j-log4j12:1.7.30'
+  implementation 'org.slf4j:slf4j-log4j12:2.0.13'
 
-  //General dependencies
-  implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-  implementation 'org.json:json:20210307'
+  // Faker Service
+  implementation 'net.datafaker:datafaker:2.3.1'
 
   // Testing dependencies
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-  testImplementation 'org.assertj:assertj-core:3.19.0'
-  testImplementation 'org.mockito:mockito-inline:3.9.0'
-  testImplementation 'org.mockito:mockito-junit-jupiter:3.9.0'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+  testImplementation 'org.assertj:assertj-core:3.26.3'
+  //testImplementation 'org.mockito:mockito-inline:5.2.0'
+  testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
 }
 
 test {
@@ -38,6 +46,8 @@ test {
 
 //Configs required to generate "Fat" jar
 jar {
+  duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
   manifest {
     attributes 'Main-Class': 'com.amazonaws.twitter.producer.examples.App'
   }

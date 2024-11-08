@@ -18,6 +18,7 @@ class KafkaServiceTest {
   private KafkaService subject;
   @Mock private KafkaProducer<String, String> kafkaProducer;
 
+  @SuppressWarnings("unchecked")
   @Test
   void invokesKafkaProducerSendMethod() {
     subject = new KafkaService(kafkaProducer);

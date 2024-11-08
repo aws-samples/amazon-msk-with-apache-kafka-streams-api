@@ -1,4 +1,5 @@
-FROM adoptopenjdk/openjdk11:jre-11.0.10_9-alpine
+FROM amazoncorretto:21-alpine
+RUN apk add libstdc++
 ARG JAR_FILE=build/libs/*.jar
 
 COPY ${JAR_FILE} kafka-streams-msk.jar

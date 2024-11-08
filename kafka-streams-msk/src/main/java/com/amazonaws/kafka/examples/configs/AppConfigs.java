@@ -3,6 +3,7 @@
 
 package com.amazonaws.kafka.examples.configs;
 
+import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.Serdes;
 
 import java.util.Properties;
@@ -32,8 +33,12 @@ public class AppConfigs {
     props.put(DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-    props.put(PROCESSING_GUARANTEE_CONFIG, EXACTLY_ONCE);
+    props.put(PROCESSING_GUARANTEE_CONFIG, EXACTLY_ONCE_V2);
     props.put(REPLICATION_FACTOR_CONFIG, 3);
+    props.put(SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
+    props.put(SaslConfigs.SASL_MECHANISM, "AWS_MSK_IAM");
+    props.put(SaslConfigs.SASL_JAAS_CONFIG, "software.amazon.msk.auth.iam.IAMLoginModule required;");
+    props.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, "software.amazon.msk.auth.iam.IAMClientCallbackHandler");
 
     return props;
   }

@@ -3,7 +3,7 @@
 
 plugins {
   id 'java'
-  id 'maven'
+  id 'maven-publish'
 }
 
 group 'com.amazonaws.kafka.examples'
@@ -13,21 +13,36 @@ repositories {
   mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 dependencies {
   //Kafka Streams dependencies
-  implementation 'org.apache.kafka:kafka-streams:2.6.1'
+  implementation 'org.apache.kafka:kafka-streams:3.8.0'
+  implementation 'software.amazon.msk:aws-msk-iam-auth:2.2.0'
 
   // Logging dependency
-  implementation 'org.slf4j:slf4j-log4j12:1.7.30'
+  implementation 'org.slf4j:slf4j-log4j12:2.0.13'
 
   //Testing dependencies
-  testImplementation 'junit:junit:4.12'
-  testImplementation 'org.assertj:assertj-core:3.19.0'
-  testImplementation 'org.apache.kafka:kafka-streams-test-utils:2.6.1'
+  // JUnit 5 dependencies
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
+  testImplementation 'org.assertj:assertj-core:3.26.3'
+  testImplementation 'org.apache.kafka:kafka-streams-test-utils:3.8.0'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 //Configs required to generate "Fat" jar
 jar {
+  duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
   manifest {
     attributes 'Main-Class': 'com.amazonaws.kafka.examples.App'
   }
